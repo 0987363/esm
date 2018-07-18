@@ -17,29 +17,31 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
+	"errors"
+	"io"
+	"io/ioutil"
 	"net/http"
+	"net/url"
+
 	"github.com/parnurzeal/gorequest"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"io"
-	"errors"
-	"bytes"
-	"net/url"
 )
 
 var request *gorequest.SuperAgent
+
 func init() {
 	request = gorequest.New()
 }
 
-func Get(url string,auth *Auth,proxy string) (*http.Response, string, []error) {
-	if(auth!=nil){
-		request.SetBasicAuth(auth.User,auth.Pass)
+func Get(url string, auth *Auth, proxy string) (*http.Response, string, []error) {
+	if auth != nil {
+		request.SetBasicAuth(auth.User, auth.Pass)
 	}
 
-	request.Header["Content-Type"]= []string{"application/json"}
-	
-	if(len(proxy)>0){
+	request.Header["Content-Type"] = []string{"application/json"}
+
+	if len(proxy) > 0 {
 		request.Proxy(proxy)
 	}
 
@@ -48,27 +50,27 @@ func Get(url string,auth *Auth,proxy string) (*http.Response, string, []error) {
 
 }
 
-func Post(url string,auth *Auth, body string,proxy string)(*http.Response, string, []error)  {
-	if(auth!=nil){
-		request.SetBasicAuth(auth.User,auth.Pass)
+func Post(url string, auth *Auth, body string, proxy string) (*http.Response, string, []error) {
+	if auth != nil {
+		request.SetBasicAuth(auth.User, auth.Pass)
 	}
 
-	request.Header["Content-Type"]= []string{"application/json"}
-	
-	if(len(proxy)>0){
+	request.Header["Content-Type"] = []string{"application/json"}
+
+	if len(proxy) > 0 {
 		request.Proxy(proxy)
 	}
 
 	request.Post(url)
 
-	if(len(body)>0){
+	if len(body) > 0 {
 		request.Send(body)
 	}
 
 	return request.End()
 }
 
-func newDeleteRequest(client *http.Client,method, urlStr string) (*http.Request, error) {
+func newDeleteRequest(client *http.Client, method, urlStr string) (*http.Request, error) {
 	if method == "" {
 		// We document that "" means "GET" for Request.Method, and people have
 		// relied on that from NewRequest, so keep that working.
@@ -91,62 +93,58 @@ func newDeleteRequest(client *http.Client,method, urlStr string) (*http.Request,
 	return req, nil
 }
 
-func Request(method string,r string,auth *Auth,body *bytes.Buffer,proxy string)(string,error)  {
-	transport := http.Transport{
-		DisableKeepAlives: false,
-	}
+func Request(method string, r string, auth *Auth, body *bytes.Buffer, proxy string) (string, error) {
+	var client *http.Client
 
-	client := &http.Client{
-		Transport: &transport,
-	}
-	if(len(proxy)>0){
+	if len(proxy) > 0 {
 		proxyURL, err := url.Parse(proxy)
-		if(err!=nil){
+		if err != nil {
 			log.Error(err)
-		}else{
-			transport := &http.Transport{Proxy: http.ProxyURL(proxyURL)}
+		} else {
+			transport := &http.Transport{Proxy: http.ProxyURL(proxyURL), DisableKeepAlives: true}
 			client = &http.Client{Transport: transport}
 		}
+	} else {
+		transport := &http.Transport{DisableKeepAlives: true}
+		client = &http.Client{ Transport: transport}
 	}
-
 
 	var reqest *http.Request
-	if(body!=nil){
-		reqest, _ =http.NewRequest(method,r,body)
-	}else{
-		reqest, _ = newDeleteRequest(client,method,r)
+	if body != nil {
+		reqest, _ = http.NewRequest(method, r, body)
+	} else {
+		reqest, _ = newDeleteRequest(client, method, r)
 	}
-	if(auth!=nil){
-		reqest.SetBasicAuth(auth.User,auth.Pass)
+	if auth != nil {
+		reqest.SetBasicAuth(auth.User, auth.Pass)
 	}
 
 	reqest.Header.Set("Content-Type", "application/json")
 
-
-	resp,errs := client.Do(reqest)
+	resp, errs := client.Do(reqest)
 	if errs != nil {
 		log.Error(errs)
-		return "",errs
+		return "", errs
 	}
 
 	if resp.StatusCode != 200 {
 		b, _ := ioutil.ReadAll(resp.Body)
-		return "",errors.New("server error: "+string(b))
+		return "", errors.New("server error: " + string(b))
 	}
 
-	respBody,err:=ioutil.ReadAll(resp.Body)
+	respBody, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
 		log.Error(err)
-		return string(respBody),err
+		return string(respBody), err
 	}
 
-	log.Debug(r,string(respBody))
+	log.Debug(r, string(respBody))
 
 	if err != nil {
-		return string(respBody),err
+		return string(respBody), err
 	}
 	io.Copy(ioutil.Discard, resp.Body)
 	defer resp.Body.Close()
-	return string(respBody),nil
+	return string(respBody), nil
 }
