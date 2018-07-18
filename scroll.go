@@ -19,7 +19,7 @@ package main
 import (
 	"gopkg.in/cheggaaa/pb.v1"
 	"encoding/json"
-	log "github.com/cihub/seelog"
+	log "github.com/sirupsen/logrus"
 )
 
 

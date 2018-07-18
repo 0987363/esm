@@ -19,7 +19,7 @@ package main
 import (
 	"sync"
 	"gopkg.in/cheggaaa/pb.v1"
-	log "github.com/cihub/seelog"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"bufio"
 	"encoding/json"
@@ -53,7 +53,7 @@ func (m *Migrator) NewFileReadWorker(pb *pb.ProgressBar, wg *sync.WaitGroup)  {
 		lineCount += 1
 		js := map[string]interface{}{}
 
-		//log.Trace("reading file,",lineCount,",", line)
+		//log.Debug("reading file,",lineCount,",", line)
 		err = json.Unmarshal([]byte(line), &js)
 		if(err!=nil){
 			log.Error(err)
@@ -112,7 +112,7 @@ func (c *Migrator) NewFileDumpWorker(pb *pb.ProgressBar, wg *sync.WaitGroup) {
 		}
 
 		jsr,err:=json.Marshal(docI)
-		log.Trace(string(jsr))
+		log.Debug(string(jsr))
 		if(err!=nil){
 			log.Error(err)
 		}

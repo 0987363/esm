@@ -19,7 +19,7 @@ package main
 import
 (
 	"encoding/json"
-	log "github.com/cihub/seelog"
+	log "github.com/sirupsen/logrus"
 	"testing"
 )
 

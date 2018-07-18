@@ -18,7 +18,7 @@ package main
 
 import (
         "bytes"
-        log "github.com/cihub/seelog"
+		log "github.com/sirupsen/logrus"
         "encoding/json"
         "fmt"
         "errors"
@@ -90,7 +90,7 @@ func (s *ESAPIV5) NewScroll(indexNames string,scrollTime string,docBufferCount i
                 }
 
                 if(maxSlicedCount>1){
-                        log.Tracef("sliced scroll, %d of %d",slicedId,maxSlicedCount)
+                        log.Debugf("sliced scroll, %d of %d",slicedId,maxSlicedCount)
                         queryBody["slice"] = map[string]interface{}{}
                         queryBody["slice"].(map[string]interface{})["id"] = slicedId
                         queryBody["slice"].(map[string]interface{})["max"]= maxSlicedCount
@@ -118,7 +118,7 @@ func (s *ESAPIV5) NewScroll(indexNames string,scrollTime string,docBufferCount i
                 return nil,errors.New(body)
         }
 
-        log.Trace("new scroll,",body)
+        log.Debug("new scroll,",body)
 
         if err != nil {
                 log.Error(err)

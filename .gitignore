@@ -4,6 +4,7 @@
 *.o
 *.a
 *.so
+*.swp
 
 # Folders
 _obj
@@ -31,4 +32,5 @@ _testmain.go
 *.iml
 /src
 
+esm
 

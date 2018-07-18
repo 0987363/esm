@@ -23,7 +23,7 @@ import (
         "fmt"
         "io"
         "io/ioutil"
-        log "github.com/cihub/seelog"
+		log "github.com/sirupsen/logrus"
         "regexp"
         "strings"
 )
@@ -69,7 +69,7 @@ func (s *ESAPIV0) Bulk(data *bytes.Buffer) {
                 log.Error(err)
                 return
         }
-        log.Trace(url,string(body))
+        log.Debug(url,string(body))
         data.Reset()
 }
 
@@ -336,7 +336,7 @@ func (s *ESAPIV0) NewScroll(indexNames string, scrollTime string, docBufferCount
         io.Copy(ioutil.Discard, resp.Body)
         defer resp.Body.Close()
 
-        log.Trace("new scroll,",url, body)
+        log.Debug("new scroll,",url, body)
 
         if err != nil {
                 log.Error(err)
@@ -374,7 +374,7 @@ func (s *ESAPIV0) NextScroll(scrollTime string, scrollId string) (*Scroll, error
         io.Copy(ioutil.Discard, resp.Body)
         defer resp.Body.Close()
 
-        log.Trace("next scroll,",url,body)
+        log.Debug("next scroll,",url,body)
 
         // decode elasticsearch scroll response
         scroll := &Scroll{}

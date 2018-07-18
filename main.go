@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"bufio"
-	log "github.com/cihub/seelog"
+	log "github.com/sirupsen/logrus"
 	goflags "github.com/jessevdk/go-flags"
 	pb "gopkg.in/cheggaaa/pb.v1"
 	"os"
@@ -32,7 +32,7 @@ func main() {
 		return
 	}
 
-	setInitLogging(c.LogLevel)
+//	setInitLogging(c.LogLevel)
 
 	if len(c.SourceEs) == 0 && len(c.DumpInputFile) == 0 {
 		log.Error("no input, type --help for more details")
@@ -160,7 +160,7 @@ func main() {
 			}
 			lineCount += 1
 		}
-		log.Trace("file line,", lineCount)
+		log.Debug("file line,", lineCount)
 		fetchBar := pb.New(lineCount).Prefix("Read")
 		outputBar = pb.New(lineCount).Prefix("Output ")
 		f.Close()

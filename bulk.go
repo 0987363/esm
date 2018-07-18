@@ -18,7 +18,7 @@ package main
 
 import (
 	"sync"
-	log "github.com/cihub/seelog"
+	log "github.com/sirupsen/logrus"
 	"encoding/json"
 	"bytes"
 	"gopkg.in/cheggaaa/pb.v1"
@@ -39,7 +39,7 @@ func (c *Migrator) NewBulkWorker(docCount *int, pb *pb.ProgressBar, wg *sync.Wai
 		select {
 		case docI, open := <-c.DocChan:
 			var err error
-			log.Trace("read doc from channel,", docI)
+			log.Debug("read doc from channel,", docI)
 		// this check is in case the document is an error with scroll stuff
 			if status, ok := docI["status"]; ok {
 				if status.(int) == 404 {
@@ -116,7 +116,7 @@ func (c *Migrator) NewBulkWorker(docCount *int, pb *pb.ProgressBar, wg *sync.Wai
 
 		CLEAN_BUFFER:
 		c.TargetESAPI.Bulk(&mainBuf)
-		log.Trace("clean buffer, and execute bulk insert")
+		log.Debug("clean buffer, and execute bulk insert")
 		pb.Add(bulkItemSize)
 		bulkItemSize = 0
 
@@ -127,7 +127,7 @@ func (c *Migrator) NewBulkWorker(docCount *int, pb *pb.ProgressBar, wg *sync.Wai
 		bulkItemSize++
 	}
 	c.TargetESAPI.Bulk(&mainBuf)
-	log.Trace("bulk insert")
+	log.Debug("bulk insert")
 	pb.Add(bulkItemSize)
 	bulkItemSize = 0
 	wg.Done()

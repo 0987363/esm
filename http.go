@@ -19,7 +19,7 @@ package main
 import (
 	"net/http"
 	"github.com/parnurzeal/gorequest"
-	log "github.com/cihub/seelog"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"io"
 	"errors"
@@ -27,13 +27,17 @@ import (
 	"net/url"
 )
 
+var request *gorequest.SuperAgent
+func init() {
+	request = gorequest.New()
+}
+
 func Get(url string,auth *Auth,proxy string) (*http.Response, string, []error) {
-	request := gorequest.New()
 	if(auth!=nil){
 		request.SetBasicAuth(auth.User,auth.Pass)
 	}
 
-	request.Header["Content-Type"]= "application/json"
+	request.Header["Content-Type"]= []string{"application/json"}
 	
 	if(len(proxy)>0){
 		request.Proxy(proxy)
@@ -45,12 +49,11 @@ func Get(url string,auth *Auth,proxy string) (*http.Response, string, []error) {
 }
 
 func Post(url string,auth *Auth, body string,proxy string)(*http.Response, string, []error)  {
-	request := gorequest.New()
 	if(auth!=nil){
 		request.SetBasicAuth(auth.User,auth.Pass)
 	}
 
-	request.Header["Content-Type"]= "application/json"
+	request.Header["Content-Type"]= []string{"application/json"}
 	
 	if(len(proxy)>0){
 		request.Proxy(proxy)
@@ -89,9 +92,13 @@ func newDeleteRequest(client *http.Client,method, urlStr string) (*http.Request,
 }
 
 func Request(method string,r string,auth *Auth,body *bytes.Buffer,proxy string)(string,error)  {
+	transport := http.Transport{
+		DisableKeepAlives: false,
+	}
 
-	var client *http.Client
-	client = &http.Client{}
+	client := &http.Client{
+		Transport: &transport,
+	}
 	if(len(proxy)>0){
 		proxyURL, err := url.Parse(proxy)
 		if(err!=nil){
@@ -134,7 +141,7 @@ func Request(method string,r string,auth *Auth,body *bytes.Buffer,proxy string)(
 		return string(respBody),err
 	}
 
-	log.Trace(r,string(respBody))
+	log.Debug(r,string(respBody))
 
 	if err != nil {
 		return string(respBody),err
